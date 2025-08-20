@@ -27,6 +27,23 @@
   text-align: center;
   border: 1px solid #ccc;
 }
+
+   .group:hover .group-hover\:gradient-text {
+  background: linear-gradient(90deg, #f3f63b, #f65c5c, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: gradient 3s ease infinite;
+  display: inline-block; /* Add this to ensure the gradient works properly */
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}     
     </style>
     <link id="all-fonts-link-font-geist" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap"><style id="all-fonts-style-font-geist">.font-geist { font-family: 'Geist', sans-serif !important; }</style></head>
     <body class="min-h-full antialiased text-gray-900 bg-gray-200">
@@ -101,7 +118,7 @@
             </article>
     
             <!-- Services Card -->
-             <article class="flex flex-col overflow-hidden group relative hover:from-neutral-800 hover:to-neutral-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 text-white bg-[url(./Davis_Ezeliora.JPG)] bg-cover rounded-2xl">
+               <article class="flex flex-col overflow-hidden group relative hover:from-neutral-800 hover:to-neutral-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 text-white bg-[url(./Davis_Ezeliora.JPG)] bg-cover rounded-2xl">
               <div class="p-6 flex-1">  <!-- Added flex-1 to take remaining space -->
                 <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center justify-between">
@@ -117,15 +134,15 @@
                 
                 <div class="space-y-2 mt-4">  <!-- Moved inside the content area and added mt-4 for spacing -->
                   <div class="flex items-center gap-2">
-                    <div class="h-1.5 w-1.5 rounded-full bg-pink-400 group-hover:bg-pink-300 transition-colors duration-300"></div>
+                    <div class="h-1.5 w-1.5 rounded-full bg-transparent group-hover:bg-pink-300 transition-colors duration-300"></div>
                     <span class="font-geist font-bold text-transparent group-hover:bg-gradient-to-r group-hover:from-gray-600 group-hover:to-white group-hover:bg-clip-text transition-colors duration-300">KI-Transformation & Beratung</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <div class="h-1.5 w-1.5 rounded-full bg-indigo-400 group-hover:bg-indigo-400 transition-colors duration-300"></div>
+                    <div class="h-1.5 w-1.5 rounded-full bg-transparent group-hover:bg-indigo-400 transition-colors duration-300"></div>
                     <span class="font-geist font-bold text-transparent group-hover:bg-gradient-to-r group-hover:from-gray-600 group-hover:to-white group-hover:bg-clip-text transition-colors duration-300">Automatisierung & Digitalisierung</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <div class="h-1.5 w-1.5 rounded-full bg-orange-400 group-hover:bg-orange-300 transition-colors duration-300"></div>
+                    <div class="h-1.5 w-1.5 rounded-full bg-transparent group-hover:bg-orange-300 transition-colors duration-300"></div>
                     <span class="font-geist font-bold text-transparent group-hover:bg-gradient-to-r group-hover:from-gray-600 group-hover:to-white group-hover:bg-clip-text transition-colors duration-300">Agiles Projektmanagement</span>
                   </div>
                 </div>
@@ -316,5 +333,6 @@
    
     
     
+
 
 
