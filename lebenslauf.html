@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Lebenslauf - Davis Ezeliora</title>
+    <link rel="icon" type="image/x-icon" href="Davis_Ezeliora.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the resume */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* A4 paper simulation */
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 2rem auto;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            overflow: hidden; /* Prevents shadow clipping */
+        }
+        /* Print-specific styles */
+        @media print {
+            *, *::before, *::after {
+                transition: none !important;
+                animation: none !important;
+                box-shadow: none !important;
+            }
+
+            body {
+                background-color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .a4-container {
+                width: 100%;
+                min-height: 0;
+                margin: 0;
+                box-shadow: none !important;
+            }
+
+            .no-print { 
+                display: none !important; 
+            }
+
+            .timeline-content {
+                max-height: none !important;
+                opacity: 1 !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+
+            .fade-in-item {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            .timeline-item-header::after {
+                content: none !important; /* Hide dropdown arrow on print */
+            }
+
+            /* Ensure header layout is preserved on print */
+            header {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+            }
+
+            /* Fix for empty bullet points in timeline */
+            .timeline-content ul {
+                list-style: none !important;
+                padding-left: 0 !important;
+            }
+            .timeline-content li {
+                display: list-item !important;
+                list-style-type: disc !important;
+                list-style-position: inside !important;
+            }
+        }
+        /* Custom heading style */
+        .section-heading {
+            color: #1e3a8a;
+            font-weight: 700;
+            font-size: 1.25rem;
+            border-bottom: 2px solid #93c5fd;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        /* Timeline container */
+        .timeline {
+            position: relative;
+            padding-left: 3rem; /* Space for icons */
+        }
+        /* The vertical line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px; /* Centered with the icon */
+            top: 10px;
+            width: 2px;
+            height: calc(100% - 20px);
+            background-color: #e5e7eb;
+        }
+        /* Timeline item styling */
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        /* Icon styling */
+        .timeline-icon {
+            position: absolute;
+            left: -3rem; /* Position left of the content */
+            top: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .timeline-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .timeline-icon svg {
+            width: 80%;
+            height: 80%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .telekom-icon {
+            position: absolute;
+            left: -3rem; /* Position left of the content */
+            top: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+    
+        .telekom-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        /* Clickable header for accordion */
+        .timeline-item-header {
+            cursor: pointer;
+            position: relative;
+        }
+        .timeline-item-header::after {
+            content: '▼';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+        .timeline-item-header.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+        /* Collapsible content */
+        .timeline-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+            padding-left: 0.25rem; /* Small indent */
+        }
+
+        /* Animation styles for fade-in/fade-out */
+        .fade-in-item {
+            opacity: 0;
+            transform: translate(-20px, -20px); /* Start from top-left */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .fade-in-item.is-visible {
+            opacity: 1;
+            transform: translate(0, 0); /* End at original position */
+        }
+
+        /* Fade-out from bottom-right to top-left (reversed effect) */
+        .fade-in-item.is-hidden {
+            opacity: 0;
+            transform: translate(20px, 20px); /* Move to bottom-right on fade-out */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="a4-container p-12 text-gray-800">
+
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row justify-between items-start mb-10">
+            <div class="flex items-center mb-6 md:mb-0">
+                <div>
+                    <h1 class="text-5xl font-bold text-blue-900">Davis Ezeliora</h1>
+                    <img src="./Davis_Ezeliora.JPG" alt="Davis Ezeliora Profilbild" class="pic w-40 h-48 rounded-full mt-5 border-2 border-blue-200 p-1">
+                </div>
+            </div>
+            <div class="text-sm text-right space-y-2">
+                <p class="flex items-center justify-end">
+                    <span class="mr-2">Königswintererstr. 120, 53227 Bonn</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </p>
+                <p class="flex items-center justify-end">
+                    <a href="mailto:davis.ezeliora@telekom.de" class="text-blue-700 hover:underline">davis.ezeliora@gmail.com</a>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </p>
+                <p class="flex items-center justify-end">
+                    <span class="mr-2">+49 160 2068651</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </p>
+                <p class="flex items-center justify-end">
+                    <a href="#" class="text-blue-700 hover:underline">[Link zu Ihrem GitHub-Profil]</a>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                </p>
+                <p class="flex items-center justify-end">
+                    <span class="mr-2">Geboren am 31.07.2000</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 1 4 1 2.5-1 4-1 2.5 1 4 1 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></svg>
+                </p>
+            </div>
+        </header>
+        
+
+        <!-- Main Content -->
+        <main>
+            <section class="mb-10">
+                <h2 class="section-heading">Kurzprofil</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Als Wirtschaftsinformatiker mit Schwerpunkt auf KI, Prozessautomatisierung und strategische Beratung möchte Ihre Firma aktiv dabei unterstützen, die Zukunft zu gestalten. Mich reizt die Chance, die Potenziale von Künstlicher Intelligenz nicht nur theoretisch hervorzuheben, sondern direkt in die Entwicklung und den Einsatz effizienter digitaler Lösungen zu integrieren. Ich bin bereit, die KI-Transformation Ihrer Firma maßgeblich mitzugestalten und so als eine tragende Säule zu Ihrem Erfolg beizutragen.
+                </p>
+            </section>
+
+            <section class="mb-10" id="experience-section">
+                <h2 class="section-heading fade-in-item">Berufliche Erfahrungen</h2>
+                <div class="timeline">
+
+                    <div class="timeline-item">
+                        <div class="timeline-icon fade-in-item">
+                            <img src="C:\Users\davis\CascadeProjects\crawl4AI-agent-v2\crawl4AI-examples\E&E Innovation Logo Design.png" alt="ChatGPT Logo" onerror="this.onerror=null;this.src='https://placehold.co/42x42/cccccc/FFFFFF?text=ChatGPT';">
+                        </div>
+                    <div class="timeline-item-header fade-in-item">
+                        <p class="font-semibold text-gray-500">seit 11/2024</p>
+                        <h3 class="font-bold text-lg text-gray-800">Freelancer</h3>
+
+                    </div>
+                    <div class="timeline-content fade-in-item">
+                        <ul class="list-disc list-inside text-gray-700 space-y-1 mt-2">
+                            <li><span class="font-semibold">KI-Transformations Partner:</span> KMUs strategisch in der KI-Adaption beraten; von KI-Audits bis zur Implementierung & Entwicklung von KI-Agenten.</li>
+                            <li><span class="font-semibold">Digitalisierung & Automatisierung:</span> Identifikation und Integration automatisierter betriebswirtschaftlicher Systeme z.B ein Lead Conversion System aus CRM, Landing Pages, Chatbots, Newsletter und Buchungssystemen.</li>
+                         </ul>
+                    </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon fade-in-item">
+                            <img src="https://media.licdn.com/dms/image/v2/D4E0BAQHQiylCy_FnKw/company-logo_200_200/company-logo_200_200/0/1721895057069/bwi_gmbh_logo?e=2147483647&v=beta&t=D8UmBDKZriekXrxDSae073rgDCYzFmxa1PKG9Pfrst4" alt="BWI Logo" onerror="this.onerror=null;this.src='https://placehold.co/42x42/cccccc/FFFFFF?text=BWI';">
+                        </div>
+                        <div class="timeline-item-header fade-in-item">
+                            <p class="font-semibold text-gray-500">06/2023 – 07/2025</p>
+                            <h3 class="font-bold text-lg text-gray-800">Digitale Transformation & Training</h3>
+                            <p class="font-semibold text-gray-600 mb-2">BWI GmbH CoE Customer Enablement | Werkstudent</p>
+                        </div>
+                        <div class="timeline-content fade-in-item">
+                            <ul class="list-disc list-inside text-gray-700 space-y-1 mt-2">
+                                <li><span class="font-semibold">Strategische KI-Beratung:</span> Beratung des Kompetenzzentrums der Bundeswehr beim  KI Meet & Greet mit IBM, Microsoft, SAP und Aleph Alpha.</li>
+                                <li><span class="font-semibold">Entwicklung von KI-Anwendungsfällen:</span> Konzeption von KI-Implementierungsprozessen und Use-Cases.</li>
+                                <li><span class="font-semibold">Prozessoptimierung & Lösungskonzepte:</span> Unterstützung bei der Konzeption und Aufbereitung optimierter Verwaltungsprozesse der Bundeswehr durch Digitalisierung und Koordination mit externen Experten.</li>
+                                <li><span class="font-semibold">Portaladministration:</span> Verwaltung, Reporting und Koordination von über 11.500 Berechtigungen und mtl. Neuzugängen.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon fade-in-item">
+                            <img src="https://cf.bstatic.com/xdata/images/xphoto/max500_ao/153177145.jpg?k=d357a43f86270d1aad474a1560c716d56955d984b7c00bab53d93990f8187975&o=" alt="Lago Reisen Logo" onerror="this.onerror=null;this.src='https://placehold.co/42x42/cccccc/FFFFFF?text=LR';">
+                        </div>
+                        <div class="timeline-item-header fade-in-item">
+                            <p class="font-semibold text-gray-500">01/2023 – 04/2025</p>
+                            <h3 class="font-bold text-lg text-gray-800">Praktikum</h3>
+                            <p class="font-semibold text-gray-600 mb-2">Lago Reisen</p>
+                        </div>
+                        <div class="timeline-content fade-in-item">
+                            <ul class="list-disc list-inside text-gray-700 space-y-1 mt-2">
+                                <li><span class="font-semibold">Automatisierung:</span> E-Mail und Kalender Automatisierungen</li>
+                                <li><span class="font-semibold">Websiteentwicklung:</span> Unterstützung bei der Entwicklung von Websites</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="telekom-icon fade-in-item">
+                            <img src="https://th.bing.com/th/id/OIP.lmrWhWd2X5kYt3b740k_mQHaHZ?w=183&h=182&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3" alt="Deutsche Telekom Logo" onerror="this.onerror=null;this.src='https://placehold.co/42x42/cccccc/FFFFFF?text=T';">
+                        </div>
+                        <div class="timeline-item-header fade-in-item">
+                            <p class="font-semibold text-gray-500">10/2019 – 12/2022</p>
+                            <h3 class="font-bold text-lg text-gray-800">Serviceentwicklung & Innovation</h3>
+                            <p class="font-semibold text-gray-600 mb-2">Deutsche Telekom Service AG | Duales Studium</p>
+                        </div>
+                        <div class="timeline-content fade-in-item">
+                            <ul class="list-disc list-inside text-gray-700 space-y-1 mt-2">
+                                <li><span class="font-semibold">Customer Relationship Management (CRM):</span> Unterstützung bei der Entwicklung & Konzeption des heutigen MagentaView CRM-Systems.</li>
+                                <li><span class="font-semibold">Robotic Process Automation (RPA):</span> Mitwirkung an der Automatisierung und Projektleitung von Prozessen in CRM-Systemen.</li>
+                                <li><span class="font-semibold">Agiles Projektmanagement:</span> Planung und Moderation von Scrum Events als Telekom zertifizierter Digital Champion.</li>
+                                <li><span class="font-semibold">Frontend-Entwicklung:</span> Unterstützung bei der Entwicklung der UX/UI Elemente bzw. Muster-Bibliothek.</li>
+                                <li><span class="font-semibold">Reporting:</span> Analyse, Visualisierung und Interpretation von Daten.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-10" id="education-section">
+                <h2 class="section-heading fade-in-item">Bildung</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-icon fade-in-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="text-blue-900"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.49 10.51L12 14.01l6.51-3.5L12 7l-6.51 3.51zM12 21a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <div class="timeline-item-header fade-in-item">
+                            <p class="font-semibold text-gray-500">10/2019 – 12/2022</p>
+                            <h3 class="font-bold text-lg text-gray-800">B.Sc. Wirtschaftsinformatik - Business Information Systems</h3>
+                            <p class="font-semibold text-gray-600">FOM Hochschule, Bonn | Bilingual</p>
+                        </div>
+                        <div class="timeline-content fade-in-item">
+                            <p class="text-gray-700 mt-2">Bachelor-Thesis: 1,5 | Gesamtnote: 2,1.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon fade-in-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="text-blue-900"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"></path></svg>
+                        </div>
+                        <div class="timeline-item-header fade-in-item">
+                            <p class="font-semibold text-gray-500">08/2011 – 07/2019</p>
+                            <h3 class="font-bold text-lg text-gray-800">Abitur</h3>
+                            <p class="font-semibold text-gray-600">Kardinal-Frings-Gymnasium, Bonn | Katholisch</p>
+                        </div>
+                        <div class="timeline-content fade-in-item">
+                            <p class="text text-gray-600 mt-2">Abiturprüfung: Informatik 1- | Erdkunde 2+ | Englisch 2- | Mathe 3+ </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="skills-projects-section">
+                <h2 class="section-heading fade-in-item">Fähigkeiten & Projekte</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div>
+                        <h3 class="font-bold text-md mb-2 text-blue-800 fade-in-item">AI & Entwicklung</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">GitHub (Repo-Nutzung, Quickstarts)</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Windsurf</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Python</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">N8N</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">RAG</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">HTML & CSS</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">MCP</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Knowledge Graphs</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-md mb-2 text-blue-800 fade-in-item">Automatisierung</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">make.com</span>
+                            <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Nintex (RPA certified)</span>
+                            <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Microsoft Office</span>
+                            <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">VBA</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-md mb-2 text-blue-800 fade-in-item">Im Studium</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">JS</span>
+                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">SQL</span>
+                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">C#</span>
+                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">C</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-md mb-2 text-blue-800 fade-in-item">Methoden & Modellierung</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Scrum</span>
+                            <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">BPMN</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-md mb-2 text-blue-800 fade-in-item">Sprachen</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Deutsch (Muttersprache)</span>
+                            <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full fade-in-item">Englisch B2(Bilinguales Studium)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // JavaScript for the interactive timeline accordion
+        document.addEventListener('DOMContentLoaded', function () {
+            const headers = document.querySelectorAll('.timeline-item-header');
+
+            headers.forEach(header => {
+                header.addEventListener('click', function () {
+                    const content = this.nextElementSibling;
+                    const isActive = this.classList.contains('active');
+
+                    // Toggle the clicked item
+                    if (isActive) {
+                        this.classList.remove('active');
+                        content.style.maxHeight = null;
+                    } else {
+                        this.classList.add('active');
+                        // Set max-height to the scrollHeight to animate open
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
+            });
+
+            // JavaScript for scroll-triggered fade-in/fade-out animation
+            // Select all elements with the 'fade-in-item' class
+            const animationTargets = document.querySelectorAll('.fade-in-item');
+
+            const observerOptions = {
+                root: null, // Use the viewport as the root
+                rootMargin: '0px 0px -50px 0px', // Adjust bottom margin to trigger earlier on scroll up
+                threshold: 0.2 // Trigger when 20% of the element is visible
+            };
+
+            // Create a single Intersection Observer
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Element is in view, fade in
+                        entry.target.classList.remove('is-hidden');
+                        entry.target.classList.add('is-visible');
+                    } else {
+                        // Element is out of view, fade out
+                        entry.target.classList.remove('is-visible');
+                        entry.target.classList.add('is-hidden');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe each individual animation target
+            animationTargets.forEach(target => {
+                observer.observe(target);
+            });
+        });
+    </script>
+
+</body>
+</html>
